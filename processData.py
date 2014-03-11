@@ -24,8 +24,6 @@ def main():
 	#(some urls dont provide a scoring summary)
 	if scoringSummaryFound != None:
 	
-		##SEEING THIS RE MEANS PLAYER DATA
-		href=re.compile('/nhl/teams/players/bio/\?name=[(\w+)]+[(\w+)]')
 
 		###USE BEAUTYSOUP TO EXTRACT TABLES	
 		
@@ -50,7 +48,16 @@ def main():
 				for td in tbody.find_all('td'):
 				
 					##FOR EACH <td> TAG FIND SOMETHING OF THE FORM HREF(HREF,HREF)
-					print td
+					a_tag = td.find_all(href=re.compile('/nhl/teams/players/bio/\?name=[a-zA-Z+]+[a-zA-Z+]'));
+					
+					for player in a_tag:
+						#If 3, two players assisted, if 2, one player assisted, if 1, no one assisted
+						numInvolvedPlayers =  len(a_tag)
+						playerString = str(player.contents)
+						#if player string contains this, the player scored a goal
+						if (playerString.find("(") > 0):
+							print playerString
+							print numInvolvedPlayers
 						
 		
 		###USE BEAUTYSOUP TO EXTRACT ALL PLAYER NAMES BETWEEN <a> TAGS
