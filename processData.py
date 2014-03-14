@@ -5,15 +5,20 @@ import string
 import urllib
 import re
 
+def printHeader():
+
+	print "\n\n==================="
+	print "NHL DATA COLLECTOR"
+	print "===================\n\n"
+	
+
 def main():
 
-	print "\n\n=============="
-	print "NHL DATA COLLECTOR"
-	print "==============\n\n"
+	printHeader();
 
 	url = 'http://www.tsn.ca/nhl/scores/boxscore/?id=18815'
 	
-	#f = open("NormalizedPlayerData.csv", 'r+');
+	#get page
 	r = requests.get(url)
 
 	#find Scoring Summary 
