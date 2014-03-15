@@ -23,7 +23,7 @@ class TsnSpider(Spider):
         	#initialize crawler
             item = TsncrawlerItem()
             #gather links
-            item['link'] = site.xpath('//div/div/div/div/p/a/@href')
+            item['link'] = site.xpath('//div/div/div/div/p/a/@href').extract()
             items.append(item)
             	
             

@@ -10,7 +10,6 @@ class TsncrawlerItem(Item):
 	link = Field()
 	desc = Field()
 
-class BoxScoreItem(Item):
-	title = Field()
-	link = Field()
-	desc = Field()
+class PlayercrawlerItem(Item):
+	name= Field()
+	link= Field()
