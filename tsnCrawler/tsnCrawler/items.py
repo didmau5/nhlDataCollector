@@ -6,10 +6,5 @@
 from scrapy.item import Item, Field
 
 class TsncrawlerItem(Item):
-	title = Field()
+	date = Field()
 	link = Field()
-	desc = Field()
-
-class PlayercrawlerItem(Item):
-	name= Field()
-	link= Field()

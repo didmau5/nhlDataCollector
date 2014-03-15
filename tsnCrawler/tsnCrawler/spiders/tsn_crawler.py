@@ -15,14 +15,16 @@ class TsnSpider(Spider):
 
 
     def parse(self, response):
-        
         sel = Selector(response)
         sites = sel.xpath('//body/form/div/div')
         items = []
         for site in sites:
         	#initialize crawler
             item = TsncrawlerItem()
-            #gather links
+            #get date
+            date = site.xpath('//div/h1/text()').extract()
+            item['date'] = date[0].strip('\n\r ')
+            # gather links
             item['link'] = site.xpath('//div/div/div/div/p/a/@href').extract()
             items.append(item)
             	

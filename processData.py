@@ -10,45 +10,53 @@ import os
 from scrapy import cmdline
 import argparse
 
+###	print program header
 def printHeader():
-
-	print "\n\n==================="
-	print "NHL DATA COLLECTOR"
-	print "===================\n\n"
+	line = "=" * 50
+	print("\n\n")
+	print(line)
+	print("++++         -- NHL DATA COLLECTOR --         ++++")
+	print(line)
+	print("\n\n")
 	
-
+###	opens list of boxscore addresses
 def openJsonFile():
 	#open file in sub-directory
 	for filename in os.listdir("tsnCrawler"):
 		f = open(os.path.join("tsnCrawler", "boxscoreAddressList.json"), "r")
-
-	#TESTPRINT
 	return json.load(f)
 
 
-#appends domain to url
-#returns a formatted list of urls
+###	appends domain to link
+###	returns a formatted list of urls
 def cleanItems(items):
-
 	urls = []
 	for elem in items['link']:
 		url = "http://www.tsn.ca%s" % elem 
 		urls.append(url)
 	return urls
 
+###	returns list of game data given a boxscore html page
+###	extracts scorer, assisters, and number of players involved in the goal
+def getGameData(soup):
 
-def getGoalData(soup):
-
+	#conatins dictionary entries of each goal data
+	#(per game/per boxscore sheet)
 	goals = []
-
+	
 	#for each <table> tab
 	for table in soup.find_all('table'):
 		#for each <tbody> tab
 		for tbody in table.find_all('tbody'):
 			#for each <td>
-			for td in tbody.find_all('td'):
+			for td in tbody.find_all('td', 'alignLeft'):
+
 				a_tag = td.find_all(href=re.compile('/nhl/teams/players/bio/\?name=[a-zA-Z+]+[a-zA-Z+]'));
 				
+				#team field possible?
+				dictEntry = {'team':'', 'scorer':'','assists':[],'num_players':0}
+
+
 				#TEST PRINT ALL a_tag
 				#print a_tag
 				
@@ -58,23 +66,23 @@ def getGoalData(soup):
 					playerString = str(player.contents[0])
 					
 					#if player string contains this, the player scored a goal
-					#the following (numPlayers-1) items are assisters
 					if (playerString.find("(") > 0):
-						dictEntry = {'scorer':playerString, 'assists':[], 'numPlayers':numInvolvedPlayers}
-						
+						dictEntry['scorer'] = playerString
+						dictEntry['num_players'] = numInvolvedPlayers
+						#the following remaining items are assisters
 						for assister in a_tag[1:]:
 								playerString = str(assister.contents[0])
 								dictEntry['assists'].append(playerString)
-							
+						#append to goals list
 						goals.append(dictEntry)
 	return goals					
 
-def printGoalData(data):
-
+###	given game data, prints it
+def printGameData(data,date):
 	line ='=' * 75
 	stars = '*' * len(line)
 	print(line)
-	print ('NEW GAME')
+	print ('||		NEW GAME:		%s		||' % str(date))
 	print(stars)
 	for entry in data:
 		print entry
@@ -82,41 +90,49 @@ def printGoalData(data):
 	print(line)
 	print('\n')
 
+###	print log of program
+def printReport(data):
+
+	#sum all goals
+	numGoals = 0
+	for game in data:
+		numGoals += len(game)
+	
+	print("%d goals recorded" % numGoals)
+	print("%d games examined" % len(data))
+
 def main():
 
 	printHeader()
 	
-	#open JSON file containing links
+	#open JSON file containing scraped links
 	items = openJsonFile()
+	date = items['date']
 	
 	#form URLs
 	urls = cleanItems(items)
+	numGames = len(urls)
+	
 	#TEST PRINT URLS
 	#print urls
+
+	#holds all game data returned by getGameData
+	data = []
 
 	#visit each url
 	for url in urls:
 	
-		#get page
-		r = requests.get(url)
-
-		#find Scoring Summary 
-#		pattern = re.compile('Scoring Summary')
-#		scoringSummaryFound = pattern.search(r.text)
-		#if page has Scoring Summary section
-		#(some urls dont provide a scoring summary)
-#		if scoringSummaryFound != None:
-		
-	
-			#use beautifulsoup to read html
+		#use beautifulsoup to read html
 		html = urllib.urlopen(url).read()
 		soup = BeautifulSoup(html)	
-		goalData = getGoalData(soup)
-		printGoalData(goalData)
-			
-		
-			
-			###USE BEAUTYSOUP TO EXTRACT ALL PLAYER NAMES BETWEEN <a> TAGS
-
+		gameData = getGameData(soup)
+		#printGameData(gameData)
+		data.append(gameData)
+	
+	for i in data:
+		printGameData(i, date)
+	
+	printReport(data)
+	
 if __name__ == "__main__":
     main()
