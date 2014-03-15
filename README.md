@@ -1,4 +1,4 @@
-Nhl Data Collector
+NHL Data Collector
 ================
 
 Collects scoring data using "Boxscore" view available on most NHL score reporting websites

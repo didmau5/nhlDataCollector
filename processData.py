@@ -17,6 +17,15 @@ def printHeader():
 	print "===================\n\n"
 	
 
+def openJsonFile():
+	#open file in sub-directory
+	for filename in os.listdir("tsnCrawler"):
+		f = open(os.path.join("tsnCrawler", "boxscoreAddressList.json"), "r")
+
+	#TESTPRINT
+	return json.load(f)
+
+
 #appends domain to url
 #returns a formatted list of urls
 def cleanItems(items):
@@ -46,40 +55,44 @@ def getGoalData(soup):
 				for player in a_tag:
 					#If 3, two players assisted, if 2, one player assisted, if 1, no one assisted
 					numInvolvedPlayers =  len(a_tag)
-					playerString = str(player.contents)
+					playerString = str(player.contents[0])
+					
 					#if player string contains this, the player scored a goal
-		
+					#the following (numPlayers-1) items are assisters
 					if (playerString.find("(") > 0):
 						dictEntry = {'scorer':playerString, 'assists':[], 'numPlayers':numInvolvedPlayers}
+						
+						for assister in a_tag[1:]:
+								playerString = str(assister.contents[0])
+								dictEntry['assists'].append(playerString)
+							
 						goals.append(dictEntry)
 	return goals					
 
 def printGoalData(data):
 
-	print ('NEW GAME\n')
+	line ='=' * 75
+	stars = '*' * len(line)
+	print(line)
+	print ('NEW GAME')
+	print(stars)
 	for entry in data:
 		print entry
+	print(stars)
+	print(line)
+	print('\n')
 
 def main():
 
-	printHeader();
+	printHeader()
 	
-	#open file in sub-directory
-	for filename in os.listdir("tsnCrawler"):
-		f = open(os.path.join("tsnCrawler", "boxscoreAddressList.json"), "r")
-
-	#TESTPRINT
-	items = json.load(f)
+	#open JSON file containing links
+	items = openJsonFile()
 	
-	
-	#get URLS from json object
+	#form URLs
 	urls = cleanItems(items)
 	#TEST PRINT URLS
-	print urls
-	
-	cd = os.getcwd()
-	os.chdir("%s/tsnCrawler/"% cd)
-
+	#print urls
 
 	#visit each url
 	for url in urls:
@@ -88,19 +101,18 @@ def main():
 		r = requests.get(url)
 
 		#find Scoring Summary 
-		pattern = re.compile('Scoring Summary')
-		scoringSummaryFound = pattern.search(r.text)
+#		pattern = re.compile('Scoring Summary')
+#		scoringSummaryFound = pattern.search(r.text)
 		#if page has Scoring Summary section
 		#(some urls dont provide a scoring summary)
-		if scoringSummaryFound != None:
+#		if scoringSummaryFound != None:
 		
 	
 			#use beautifulsoup to read html
-			html = urllib.urlopen(url).read()
-			soup = BeautifulSoup(html)
-			
-			goalData = getGoalData(soup)
-			printGoalData(goalData)
+		html = urllib.urlopen(url).read()
+		soup = BeautifulSoup(html)	
+		goalData = getGoalData(soup)
+		printGoalData(goalData)
 			
 		
 			
