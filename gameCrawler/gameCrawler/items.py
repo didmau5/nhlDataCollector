@@ -8,3 +8,7 @@ from scrapy.item import Item, Field
 class TsncrawlerItem(Item):
 	date = Field()
 	link = Field()
+
+class NhlcrawlerItem(Item):
+	date = Field()
+	link = Field()

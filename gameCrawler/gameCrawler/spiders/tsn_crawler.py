@@ -1,6 +1,6 @@
 from scrapy.spider import Spider
 from scrapy.selector import Selector
-from tsnCrawler.items import TsncrawlerItem
+from gameCrawler.items import TsncrawlerItem
 
 
 
@@ -23,10 +23,9 @@ class TsnSpider(Spider):
             item = TsncrawlerItem()
             #get date
             date = site.xpath('//div/h1/text()').extract()
-            item['date'] = date[0].strip('\n\r ')
+            item['date'] = [date[0].strip('\n\r ')]
             # gather links
             item['link'] = site.xpath('//div/div/div/div/p/a/@href').extract()
             items.append(item)
-            	
-            
+
         return items

@@ -22,8 +22,8 @@ def printHeader():
 ###	opens list of boxscore addresses
 def openJsonFile():
 	#open file in sub-directory
-	for filename in os.listdir("tsnCrawler"):
-		f = open(os.path.join("tsnCrawler", "boxscoreAddressList.json"), "r")
+	for filename in os.listdir("gameCrawler"):
+		f = open(os.path.join("gameCrawler", "boxscoreAddressList.json"), "r")
 	return json.load(f)
 
 
@@ -82,7 +82,7 @@ def printGameData(data,date):
 	line ='=' * 75
 	stars = '*' * len(line)
 	print(line)
-	print ('||		NEW GAME:		%s		||' % str(date))
+	print ('||		NEW GAME:	%s		||' % str(date))
 	print(stars)
 	for entry in data:
 		print entry
@@ -107,6 +107,8 @@ def main():
 	
 	#open JSON file containing scraped links
 	items = openJsonFile()
+	
+
 	date = items['date']
 	
 	#form URLs
@@ -126,11 +128,11 @@ def main():
 		html = urllib.urlopen(url).read()
 		soup = BeautifulSoup(html)	
 		gameData = getGameData(soup)
-		#printGameData(gameData)
 		data.append(gameData)
 	
 	for i in data:
-		printGameData(i, date)
+		#this call only passes the first date to print
+		printGameData(i, date[0])
 	
 	printReport(data)
 	

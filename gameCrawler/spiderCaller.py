@@ -25,6 +25,7 @@ def main():
 	##execute call to scrapy
 	##with date and output file as parameters
 	execString = ("scrapy crawl tsn -a date=%s -o boxscoreAddressList.json" % args.date)
+	#execString = ("scrapy crawl nhl -o boxscoreAddressList.json")
 	cmdline.execute(execString.split())
 
 if __name__ == "__main__":
