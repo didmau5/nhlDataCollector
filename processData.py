@@ -1,3 +1,13 @@
+#	\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+#	
+#	 Date : March 18,2014	
+#	 Author : Daniel Mow
+#	 Email : mow.daniel@gmail.com
+#	 Purpose : Processes the JSON object containing scoresheet links
+#			   and retreives goal data.
+#	
+#	////////////////////////////////////////////////////////////////
+
 #!/usr/bin/env
 import requests
 from bs4 import BeautifulSoup

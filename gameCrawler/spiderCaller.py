@@ -12,9 +12,10 @@ def main():
 	
 	#parse date arguement
 	parser = argparse.ArgumentParser()
-	parser.add_argument("date", help="input a date: mm/dd/yr")
+	parser.add_argument("startDate", help="input a start date: mm/dd/yr")
+	parser.add_argument("endDate", help="input an end date: mm/dd/yr")
 	args = parser.parse_args()
-	print args.date
+	print args
 	
 	#first delete boxsoreAddressList from previous executions
 	try:
@@ -24,9 +25,11 @@ def main():
 	
 	##execute call to scrapy
 	##with date and output file as parameters
-	execString = ("scrapy crawl tsn -a date=%s -o boxscoreAddressList.json" % args.date)
+	##writes to JSON object boxscoreAddressList
+	execString = ("scrapy crawl tsn -a startDate=%s -a endDate=%s -o boxscoreAddressList.json" % (args.startDate, args.endDate))
 	#execString = ("scrapy crawl nhl -o boxscoreAddressList.json")
 	cmdline.execute(execString.split())
 
 if __name__ == "__main__":
     main()
+    
