@@ -26,7 +26,7 @@ def main():
 	##execute call to scrapy
 	##with date and output file as parameters
 	##writes to JSON object boxscoreAddressList
-	execString = ("scrapy crawl tsn -a startDate=%s -a endDate=%s -o boxscoreAddressList.json" % (args.startDate, args.endDate))
+	execString = ("scrapy crawl tsn -a startDate=%s -a endDate=%s " % (args.startDate, args.endDate))
 	#execString = ("scrapy crawl nhl -o boxscoreAddressList.json")
 	cmdline.execute(execString.split())
 

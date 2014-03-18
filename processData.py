@@ -33,15 +33,15 @@ def printHeader():
 def openJsonFile():
 	#open file in sub-directory
 	for filename in os.listdir("gameCrawler"):
-		f = open(os.path.join("gameCrawler", "boxscoreAddressList.json"), "r")
+		f = open(os.path.join("gameCrawler", "gameCrawlerItems.json"), "r")
 	return json.load(f)
 
 
 ###	appends domain to link
 ###	returns a formatted list of urls
-def cleanItems(items):
+def cleanItems(item):
 	urls = []
-	for elem in items['link']:
+	for elem in item['link']:
 		url = "http://www.tsn.ca%s" % elem 
 		urls.append(url)
 	return urls
@@ -117,34 +117,47 @@ def main():
 	
 	#open JSON file containing scraped links
 	items = openJsonFile()
-	
 
-	date = items['date']
-	
-	#form URLs
-	urls = cleanItems(items)
-	numGames = len(urls)
-	
-	#TEST PRINT URLS
-	#print urls
+	#holds all goal info
+	allGameData = []
 
-	#holds all game data returned by getGameData
-	data = []
-
-	#visit each url
-	for url in urls:
+	#for each date
+	for item in items:
+		#set date
+		date = item['date']
+		
+		#form URLs
+		urls = cleanItems(item)
+		numGames = len(urls)
+		
+		#TEST PRINT URLS
+		#print urls
 	
-		#use beautifulsoup to read html
-		html = urllib.urlopen(url).read()
-		soup = BeautifulSoup(html)	
-		gameData = getGameData(soup)
-		data.append(gameData)
+		#holds all game data returned by getGameData
+		data = []
 	
-	for i in data:
-		#this call only passes the first date to print
-		printGameData(i, date[0])
-	
-	printReport(data)
+		#visit each url
+		for url in urls:
+		
+			#use beautifulsoup to read html
+			html = urllib.urlopen(url).read()
+			soup = BeautifulSoup(html)	
+			gameData = getGameData(soup)
+			data.append(gameData)
+		
+		for game in data:
+			#TEST PRINT GAME DATA
+			printGameData(game, date[0])
+			#append all goal data to all game data
+			for goal in game:
+				allGameData.append(goal)
+		
+		#print per day stats
+		printReport(data)
+		
+	for i in allGameData:
+		print i
+		
 	
 if __name__ == "__main__":
     main()

@@ -7,26 +7,48 @@ from datetime import date, timedelta
 #given a list of dates mm/dd/yr, returns a list of urls
 def formatUrl(dates):
 	
-	return ['http://www.tsn.ca/nhl/scores/?date=%s' % dates]
+	urls = []
+	for elem in dates:
+		dateList = str(elem).split('-')
+		dateString = dateList[1] + '/' + dateList[2] + '/' + dateList[0]
+		urls.append('http://www.tsn.ca/nhl/scores/?date=%s' % dateString)
+	return urls
 
-#given a start and end date, returns a list of daten in between
-#(inclusive of start and end)
+# cleans data info for forming a date for comparison
+# returns a list of integers corresponding with the specified start and end dates
+def cleanDate(start, end):
+
+	#strip 0 from month and day
+	monthDay = start[:2] + end[:2]
+	cleanMonthDay = [i.lstrip('0') for i in monthDay]
+
+	#add 20 to year
+	year = [start[2]] + [end[2]] 
+	cleanYear = ['20'+i for i in year]
+	#return list in date() parameter order
+	return[int(cleanYear[0])] + [int(cleanMonthDay[0])] + [int(cleanMonthDay[1])] + [int(cleanYear[1])] + [int(cleanMonthDay[2])] + [int(cleanMonthDay[3])] 
+	
+
+# given a start and end date, returns a list of dates in between
+# (inclusive of start and end)
+# date comparison algorithm found @ 
+# http://stackoverflow.com/questions/7274267/print-all-day-dates-between-two-dates
 def getDates(start, end):
 	
 	startSplit = start.split('/')
 	endSplit = end.split('/')
 
-	#add 20 to 14 for 2014
-	#strip leading 0s of day and month
-	d1 = date(2014,3,3)
-	d2 = date(2014,3,9)
+	dateSpecs = cleanDate(startSplit,endSplit)
+	d1 = date(dateSpecs[0],dateSpecs[1],dateSpecs[2])
+	d2 = date(dateSpecs[3],dateSpecs[4],dateSpecs[5])
 
 	delta = d2 - d1
 
+	dates = []
 	for i in range(delta.days + 1):
-	    	print d1 + timedelta(days=i)
+	    	dates.append( d1 + timedelta(days=i) )
 
-	return start
+	return dates
 
 class TsnSpider(Spider):
     name = "tsn"
@@ -38,8 +60,8 @@ class TsnSpider(Spider):
         
         #get dates
         dates = getDates(startDate, endDate)
+        #for i in range(len(dates)): print dates[i]
         urls = formatUrl(dates)
-        #set returned list to start_urls
         self.start_urls = urls
 
 
