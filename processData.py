@@ -19,6 +19,9 @@ import json
 import os
 from scrapy import cmdline
 import argparse
+import csv
+
+MAX_NUM_ASSISTERS = 2
 
 ###	print program header
 def printHeader():
@@ -77,7 +80,7 @@ def getGameData(soup):
 					
 					#if player string contains this, the player scored a goal
 					if (playerString.find("(") > 0):
-						dictEntry['scorer'] = playerString
+						dictEntry['scorer'] = playerString.rstrip('0123456789() ')
 						dictEntry['num_players'] = numInvolvedPlayers
 						#the following remaining items are assisters
 						for assister in a_tag[1:]:
@@ -110,6 +113,32 @@ def printReport(data):
 	
 	print("%d goals recorded" % numGoals)
 	print("%d games examined" % len(data))
+
+# given list of game data
+# outputs to csv file
+def writeGameData(data):
+
+	fp = open('goalData.csv', 'wb')
+	wr = csv.writer(fp)
+	
+	#write attributes
+	wr.writerow(['assist1', 'assist2', 'scorer'])
+	
+	for goal in data:
+		row = []
+		for attr in goal:
+			if ('scorer' in attr):
+				row.append(goal[attr].replace("'", ""))
+			if('assists' in attr):
+				#fill in NULL attributes
+				#less than 2 assisters
+				if(len(goal[attr]) < MAX_NUM_ASSISTERS):
+					for i in range(MAX_NUM_ASSISTERS-len(goal[attr])):
+						row.append('')
+				for assister in goal[attr]:
+					row.append(assister.replace("'", ''))
+		print row
+		wr.writerow(row)
 
 def main():
 
@@ -147,17 +176,19 @@ def main():
 		
 		for game in data:
 			#TEST PRINT GAME DATA
-			printGameData(game, date[0])
+			#printGameData(game, date[0])
 			#append all goal data to all game data
 			for goal in game:
 				allGameData.append(goal)
 		
 		#print per day stats
-		printReport(data)
-		
-	for i in allGameData:
-		print i
-		
+		#printReport(data)
+	
+	#TEST PRINT ALL THE GAME DATA
+	#for i in allGameData:
+		#print i
+	#print len(allGameData)
+	writeGameData(allGameData)
 	
 if __name__ == "__main__":
     main()
