@@ -1,4 +1,4 @@
-#!/usr/bin/env
+#!/usr/bin/env python
 from scrapy import cmdline
 import argparse
 import os

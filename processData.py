@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #	\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 #	
 #	 Date : March 18,2014	
@@ -8,7 +9,6 @@
 #	
 #	////////////////////////////////////////////////////////////////
 
-#!/usr/bin/env
 import requests
 from bs4 import BeautifulSoup
 from scrapy.selector import Selector
@@ -122,7 +122,7 @@ def writeGameData(data):
 	wr = csv.writer(fp)
 	
 	#write attributes
-	wr.writerow(['assist1', 'assist2', 'scorer'])
+	wr.writerow(['scorer','assist1', 'assist2'])
 	
 	for goal in data:
 		row = []
@@ -132,11 +132,13 @@ def writeGameData(data):
 			if('assists' in attr):
 				#fill in NULL attributes
 				#less than 2 assisters
+				for assister in goal[attr]:
+					row.append(assister.replace("'", ''))				
 				if(len(goal[attr]) < MAX_NUM_ASSISTERS):
 					for i in range(MAX_NUM_ASSISTERS-len(goal[attr])):
 						row.append('')
-				for assister in goal[attr]:
-					row.append(assister.replace("'", ''))
+		#put scorer to front of row
+		row = [row[2]]+row[:2]
 		print row
 		wr.writerow(row)
 
@@ -176,7 +178,7 @@ def main():
 		
 		for game in data:
 			#TEST PRINT GAME DATA
-			#printGameData(game, date[0])
+			printGameData(game, date[0])
 			#append all goal data to all game data
 			for goal in game:
 				allGameData.append(goal)
