@@ -1,13 +1,19 @@
 from scrapy.spider import Spider
 from scrapy.selector import Selector
 from gameCrawler.items import NhlcrawlerItem
-
-
+from datetime import date, timedelta
+import re
+from scrapy.http import Request 
 
 class NhlSpider(Spider):
     name = "nhl"
     allowed_domains = ["nhl.com"]
-    start_urls = ['http://www.nhl.com/ice/gamestats.htm']
+    #date passed as parameter for start url
+    def __init__(self, seasonStart = None, seasonEnd = None, *args, **kwargs):
+        super(NhlSpider, self).__init__(*args, **kwargs)
+        season = seasonStart+seasonEnd
+        print season
+    	self.start_urls = ['http://www.nhl.com/ice/gamestats.htm?season=%s' % season]
 
 
     def parse(self, response):
@@ -20,8 +26,15 @@ class NhlSpider(Spider):
             
             #get date
             item['date'] = site.xpath('//tr/td//a/text()').extract()   
-
             # gather links
             item['link'] = site.xpath('//tr/td/a/@href').extract()
             items.append(item)
-        return items
+
+		#get next page        
+        nextPage = site.xpath("../tfoot/tr/td/div/div/a[contains(text(),'Next')]/@href").extract()
+        #if there is a next page
+        if(nextPage):
+			nextPage = 'http://www.nhl.com' + nextPage[0]
+			self.start_urls.append(nextPage)
+			yield Request(nextPage, callback = self.parse)
+			#return items

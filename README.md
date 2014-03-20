@@ -12,10 +12,10 @@ Uses scrapy for web crawling and beautifulsoup to extract data from html.
 HOW TO RUN:
 ========================
 
-First call the spider:
+First call the spider with <start date> <end date> as parameters:
 	$cd gameCrawler
-	$python spiderCaller.py <"mm/dd/yr">
+	$./spiderCaller.py <"mm/dd/yr"> <"mm/dd/yr">
 
 Then process the data:
 	$cd ..
-	$python processDate.py
+	$./processDate.py
