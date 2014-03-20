@@ -5,6 +5,7 @@ from datetime import date, timedelta
 import re
 from scrapy.http import Request 
 
+
 class NhlSpider(Spider):
     name = "nhl"
     allowed_domains = ["nhl.com"]
@@ -18,23 +19,20 @@ class NhlSpider(Spider):
 
     def parse(self, response):
         sel = Selector(response)
-        sites = sel.xpath('//body/div/div/div/div/table/tbody')
-        items = []
+        sites = sel.xpath("//body/div/div/div/div/table[@class='data stats']/tbody")
+
         for site in sites:
         	#initialize crawler
             item = NhlcrawlerItem()
-            
             #get date
             item['date'] = site.xpath('//tr/td//a/text()').extract()   
             # gather links
             item['link'] = site.xpath('//tr/td/a/@href').extract()
-            items.append(item)
+            yield item
 
 		#get next page        
         nextPage = site.xpath("../tfoot/tr/td/div/div/a[contains(text(),'Next')]/@href").extract()
         #if there is a next page
         if(nextPage):
 			nextPage = 'http://www.nhl.com' + nextPage[0]
-			self.start_urls.append(nextPage)
 			yield Request(nextPage, callback = self.parse)
-			#return items

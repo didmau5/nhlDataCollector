@@ -22,6 +22,7 @@ import argparse
 import csv
 
 MAX_NUM_ASSISTERS = 2
+PLAYER_PATTERN = '(\d)(\d)? (\w).(\w)+\((\d)(\d)?\)'
 
 ###	print program header
 def printHeader():
@@ -49,9 +50,49 @@ def cleanItems(item):
 		urls.append(url)
 	return urls
 
-###	returns list of game data given a boxscore html page
+###		WORKING HERE    #####
+
+###	returns list of game data given an nhl gamesheet html page
 ###	extracts scorer, assisters, and number of players involved in the goal
-def getGameData(soup):
+def getNhlGameData(soup):
+
+	#conatins dictionary entries of each goal data
+	#(per game/per boxscore sheet)
+	goals = []
+	
+	##get players involved
+	for td in soup.find_all(align='left'):
+		for contents in td.contents:
+			if (re.match(PLAYER_PATTERN, str(contents)) is not None):
+				print contents
+				
+				#team field possible?
+#				dictEntry = {'team':'', 'scorer':'','assists':[],'num_players':0}
+
+
+				#TEST PRINT ALL a_tag
+				#print a_tag
+				
+#				for player in a_tag:
+					#If 3, two players assisted, if 2, one player assisted, if 1, no one assisted
+#					numInvolvedPlayers =  len(a_tag)
+#					playerString = str(player.contents[0])
+					
+					#if player string contains this, the player scored a goal
+#					if (playerString.find("(") > 0):
+#						dictEntry['scorer'] = playerString.rstrip('0123456789() ')
+#						dictEntry['num_players'] = numInvolvedPlayers
+						#the following remaining items are assisters
+#						for assister in a_tag[1:]:
+#								playerString = str(assister.contents[0])
+#								dictEntry['assists'].append(playerString)
+						#append to goals list
+#						goals.append(dictEntry)
+	return goals	
+
+###	returns list of game data given a tsn boxscore html page
+###	extracts scorer, assisters, and number of players involved in the goal
+def getTsnGameData(soup):
 
 	#conatins dictionary entries of each goal data
 	#(per game/per boxscore sheet)
@@ -152,13 +193,21 @@ def main():
 	#holds all goal info
 	allGameData = []
 
+	#indicator flag: tsn = 0 ,nhl =1
+	tsnOrNhl = 0
+
 	#for each date
 	for item in items:
 		#set date
 		date = item['date']
 		
-		#form URLs
-		urls = cleanItems(item)
+		#form URLs if they are scraped from tsn (not from nhl)
+		if ("http://www.nhl.com/scores/htmlreports" not in item['link'][0]):
+			urls = cleanItems(item)
+		else:
+			tsnOrNhl = 1
+			urls = item['link']
+		
 		numGames = len(urls)
 		
 		#TEST PRINT URLS
@@ -173,7 +222,10 @@ def main():
 			#use beautifulsoup to read html
 			html = urllib.urlopen(url).read()
 			soup = BeautifulSoup(html)	
-			gameData = getGameData(soup)
+			if(tsnOrNhl == 0 ):
+				gameData = getTsnGameData(soup)
+			else:
+				gameData = getNhlGameData(soup)
 			data.append(gameData)
 		
 		for game in data:
@@ -187,9 +239,9 @@ def main():
 		#printReport(data)
 	
 	#TEST PRINT ALL THE GAME DATA
-	#for i in allGameData:
-		#print i
-	#print len(allGameData)
+	for i in allGameData:
+		print i
+	print len(allGameData)
 	writeGameData(allGameData)
 	
 if __name__ == "__main__":

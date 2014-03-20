@@ -2,7 +2,7 @@
 NHL Data Collector
 ======================
 
-Collects scoring data using "Boxscore" view available on most NHL score reporting websites.
+Collects regular season scoring data from gamesheets posted on tsn.ca or nhl.com.
 Uses scrapy for web crawling and beautifulsoup to extract data from html.
 
 *** Currently only crawls tsn.ca and nhl.com for goal data
