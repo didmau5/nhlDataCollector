@@ -28,8 +28,8 @@ def main():
 	##execute call to scrapy
 	##with date and output file as parameters
 	##writes to JSON object boxscoreAddressList
-	execString = ("scrapy crawl tsn -a startDate=%s -a endDate=%s " % (args.startDate, args.endDate))
-	#execString = ("scrapy crawl nhl -a seasonStart=%s -a seasonEnd=%s " % (args.startDate, args.endDate))
+	#execString = ("scrapy crawl tsn -a startDate=%s -a endDate=%s " % (args.startDate, args.endDate))
+	execString = ("scrapy crawl nhl -a seasonStart=%s -a seasonEnd=%s " % (args.startDate, args.endDate))
 	cmdline.execute(execString.split())
 
 if __name__ == "__main__":
