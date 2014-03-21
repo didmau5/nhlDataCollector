@@ -42,14 +42,12 @@ def openJsonFile():
 
 
 def populateGoals(players):
-
 	#conatins dictionary entries of each goal data
 	#(per game/per boxscore sheet)
 	goals = []
 	i = 0
 	dictEntry = {'team':'', 'scorer':'','assists':[],'num_players':0}
 	for player in players:
-		
 		#this player is the scorer
 		if (i%3 == 0):
 			dictEntry['scorer'] = player
@@ -104,38 +102,32 @@ def getTsnGameData(soup):
 	#(per game/per boxscore sheet)
 	goals = []
 	
-	###		CAN THIS BE SET UP TO USE LESS NESTED FORS???	####
 	#for each <table> tab
-	for table in soup.find_all('table'):
-		#for each <tbody> tab
-		for tbody in table.find_all('tbody'):
-			#for each <td>
-			for td in tbody.find_all('td', 'alignLeft'):
+	for td in soup.find_all('td', 'alignLeft'):
 
-				a_tag = td.find_all(href=re.compile('/nhl/teams/players/bio/\?name=[a-zA-Z+]+[a-zA-Z+]'));
-				
-				#team field possible?
-				dictEntry = {'team':'', 'scorer':'','assists':[],'num_players':0}
+		a_tag = td.find_all(href=re.compile('/nhl/teams/players/bio/\?name=[a-zA-Z+]+[a-zA-Z+]'));
+		
+		#team field possible?
+		dictEntry = {'team':'', 'scorer':'','assists':[],'num_players':0}
 
-
-				#TEST PRINT ALL a_tag
-				#print a_tag
-				
-				for player in a_tag:
-					#If 3, two players assisted, if 2, one player assisted, if 1, no one assisted
-					numInvolvedPlayers =  len(a_tag)
-					playerString = str(player.contents[0])
-					
-					#if player string contains this, the player scored a goal
-					if (playerString.find("(") > 0):
-						dictEntry['scorer'] = playerString.rstrip('0123456789() ')
-						dictEntry['num_players'] = numInvolvedPlayers
-						#the following remaining items are assisters
-						for assister in a_tag[1:]:
-								playerString = str(assister.contents[0])
-								dictEntry['assists'].append(playerString)
-						#append to goals list
-						goals.append(dictEntry)
+		#TEST PRINT ALL a_tag
+		#print a_tag
+		
+		for player in a_tag:
+			#If 3, two players assisted, if 2, one player assisted, if 1, no one assisted
+			numInvolvedPlayers =  len(a_tag)
+			playerString = str(player.contents[0])
+			
+			#if player string contains this, the player scored a goal
+			if (playerString.find("(") > 0):
+				dictEntry['scorer'] = playerString.rstrip('0123456789() ')
+				dictEntry['num_players'] = numInvolvedPlayers
+				#the following remaining items are assisters
+				for assister in a_tag[1:]:
+						playerString = str(assister.contents[0])
+						dictEntry['assists'].append(playerString)
+				#append to goals list
+				goals.append(dictEntry)
 	return goals					
 
 ###	given game data, prints it
@@ -160,7 +152,7 @@ def printReport(data):
 		numGoals += len(game)
 	
 	print("%d goals recorded" % numGoals)
-	print("%d games examined" % len(data))
+	print("%d games examined\n" % len(data))
 
 # given list of game data
 # outputs to csv file
@@ -199,8 +191,8 @@ def main():
 	#holds all goal info
 	allGameData = []
 
-	#indicator flag: tsn = 0 ,nhl =1
-	tsnOrNhl = 0
+	#assumes tsn data
+	tsn = True
 
 	#for each date
 	for item in items:
@@ -211,7 +203,7 @@ def main():
 		if ("http://www.nhl.com/scores/htmlreports" not in item['link'][0]):
 			urls = cleanItems(item)
 		else:
-			tsnOrNhl = 1
+			tsn = False
 			urls = item['link']
 		
 		numGames = len(urls)
@@ -228,7 +220,7 @@ def main():
 			#use beautifulsoup to read html
 			html = urllib.urlopen(url).read()
 			soup = BeautifulSoup(html)	
-			if(tsnOrNhl == 0 ):
+			if(tsn):
 				gameData = getTsnGameData(soup)
 			else:
 				gameData = getNhlGameData(soup)
