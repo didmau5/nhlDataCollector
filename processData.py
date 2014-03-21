@@ -80,9 +80,13 @@ def getNhlGameData(soup):
 	involvedPlayers = []
 	##get players involved
 	for td in soup.find_all(align='left'):
-		if( ('\n' in str(td.contents[0])) and (i==1 or i==2)):
+		if('unassisted' in str(td.contents[0])):
+			i +=1
+			involvedPlayers.append('')
+		elif(('\n' in str(td.contents[0])) and (i==1 or i==2) ):
 			i=0
 			involvedPlayers.append('')
+	
 		for contents in td.contents:
 			if (re.match(PLAYER_PATTERN, str(contents)) is not None):
 				involvedPlayers.append(contents.strip('1234567890() '))
