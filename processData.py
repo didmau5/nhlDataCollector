@@ -76,17 +76,23 @@ def cleanItems(item):
 ###	returns list of game data given an nhl gamesheet html page
 ###	extracts scorer, assisters, and number of players involved in the goal
 def getNhlGameData(soup):
-
+	i = 0
 	involvedPlayers = []
 	##get players involved
 	for td in soup.find_all(align='left'):
+		if( ('\n' in str(td.contents[0])) and (i==1 or i==2)):
+			i=0
+			involvedPlayers.append('')
 		for contents in td.contents:
 			if (re.match(PLAYER_PATTERN, str(contents)) is not None):
 				involvedPlayers.append(contents.strip('1234567890() '))
-				
+				i+=1
+				if(i==3):
+					i =0
+	print involvedPlayers
 	return populateGoals(involvedPlayers)	
 
-###	returns list of game data given a tsn boxscore html page
+###	returns list of game data given as tsn boxscore html page
 ###	extracts scorer, assisters, and number of players involved in the goal
 def getTsnGameData(soup):
 
