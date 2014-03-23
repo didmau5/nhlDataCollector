@@ -102,24 +102,21 @@ def getTsnGameData(soup):
 	#(per game/per boxscore sheet)
 	goals = []
 	
+	tdList = soup.find_all('td', 'alignLeft')
+	tdIndex = 0
 	#for each <table> tab
-	for td in soup.find_all('td', 'alignLeft'):
-
+	for td in tdList:
+	
 		a_tag = td.find_all(href=re.compile('/nhl/teams/players/bio/\?name=[a-zA-Z+]+[a-zA-Z+]'));
-		
-		#team field possible?
 		dictEntry = {'team':'', 'scorer':'','assists':[],'num_players':0}
 
-		#TEST PRINT ALL a_tag
-		#print a_tag
-		
 		for player in a_tag:
 			#If 3, two players assisted, if 2, one player assisted, if 1, no one assisted
 			numInvolvedPlayers =  len(a_tag)
 			playerString = str(player.contents[0])
-			
 			#if player string contains this, the player scored a goal
 			if (playerString.find("(") > 0):
+				dictEntry['team'] = tdList[tdIndex-1].contents[0]
 				dictEntry['scorer'] = playerString.rstrip('0123456789() ')
 				dictEntry['num_players'] = numInvolvedPlayers
 				#the following remaining items are assisters
@@ -128,6 +125,7 @@ def getTsnGameData(soup):
 						dictEntry['assists'].append(playerString)
 				#append to goals list
 				goals.append(dictEntry)
+		tdIndex +=1
 	return goals					
 
 ###	given game data, prints it
@@ -240,7 +238,7 @@ def main():
 #	for i in allGameData:
 #		print i
 #	print len(allGameData)
-	writeGameData(allGameData)
+#	writeGameData(allGameData)
 	
 if __name__ == "__main__":
     main()

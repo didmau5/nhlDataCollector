@@ -2,6 +2,7 @@
 from scrapy import cmdline
 import argparse
 import os
+import re
 
 ##needs to iterate over a range of valid dates
 
@@ -28,8 +29,13 @@ def main():
 	##execute call to scrapy
 	##with date and output file as parameters
 	##writes to JSON object boxscoreAddressList
-	execString = ("scrapy crawl tsn -a startDate=%s -a endDate=%s " % (args.startDate, args.endDate))
-	#execString = ("scrapy crawl nhl -a seasonStart=%s -a seasonEnd=%s " % (args.startDate, args.endDate))
+	if(re.match('(\d)(\d)(\d)(\d) (\d)(\d)(\d)(\d)',args.startDate + ' ' + args.endDate)):
+		print "season specified - scraping nhl"
+		execString = ("scrapy crawl nhl -a seasonStart=%s -a seasonEnd=%s " % (args.startDate, args.endDate))
+	else:
+		print "date range specified - scraping tsn"
+		execString = ("scrapy crawl tsn -a startDate=%s -a endDate=%s " % (args.startDate, args.endDate))
+	
 	cmdline.execute(execString.split())
 
 if __name__ == "__main__":
