@@ -22,7 +22,7 @@ import argparse
 import csv
 
 MAX_NUM_ASSISTERS = 2
-PLAYER_PATTERN = '(\d)(\d)? (\w).[\'(\w)]+\((\d)(\d)?\)'
+PLAYER_PATTERN = '(\d)(\d)? (\w).[\'(\w)-]+\((\d)(\d)?\)'
 
 ###	print program header
 def printHeader():
@@ -78,15 +78,22 @@ def getNhlGameData(soup):
 	involvedPlayers = []
 	##get players involved
 	for td in soup.find_all(align='left'):
-		if('unassisted' in str(td.contents[0])):
+		#deal with weird chars in Shootout Goal
+		tdString = td.contents[0].encode('utf-8')
+		if('unassisted' in tdString):
 			i +=1
 			involvedPlayers.append('')
-		elif(('\n' in str(td.contents[0])) and (i==1 or i==2) ):
+		elif('Penalty Shot' in tdString):
+			i+=1
+			involvedPlayers.append('')
+			involvedPlayers.append('')
+		elif((tdString == '\n') and (i==1 or i==2) and (len(td.contents) == 1)):
 			i=0
 			involvedPlayers.append('')
-	
+		elif( (tdString == '\xa0') and (i == 1)):
+			print 'SO goal'
 		for contents in td.contents:
-			if (re.match(PLAYER_PATTERN, str(contents)) is not None):
+			if (re.match(PLAYER_PATTERN, tdString) is not None):
 				involvedPlayers.append(contents.strip('1234567890() '))
 				i+=1
 				if(i==3):
@@ -160,11 +167,13 @@ def writeGameData(data):
 	wr = csv.writer(fp)
 	
 	#write attributes
-	wr.writerow(['scorer','assist1', 'assist2'])
+	wr.writerow(['team','scorer','assist1', 'assist2'])
 	
 	for goal in data:
 		row = []
 		for attr in goal:
+			if('team' in attr):
+				row.append(goal[attr])
 			if ('scorer' in attr):
 				row.append(goal[attr].replace("'", ""))
 			if('assists' in attr):
@@ -176,7 +185,7 @@ def writeGameData(data):
 					for i in range(MAX_NUM_ASSISTERS-len(goal[attr])):
 						row.append('')
 		#put scorer to front of row
-		row = [row[2]]+row[:2]
+		row = [row[3]]+[row[2]]+row[:2]
 		wr.writerow(row)
 
 def main():
@@ -238,7 +247,7 @@ def main():
 #	for i in allGameData:
 #		print i
 #	print len(allGameData)
-#	writeGameData(allGameData)
+	writeGameData(allGameData)
 	
 if __name__ == "__main__":
     main()
