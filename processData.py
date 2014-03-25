@@ -41,16 +41,20 @@ def openJsonFile():
 	return json.load(f)
 
 
-def populateGoals(players):
+def populateGoals(team,players):
 	#conatins dictionary entries of each goal data
 	#(per game/per boxscore sheet)
 	goals = []
+	teamIndex = 0
 	i = 0
 	dictEntry = {'team':'', 'scorer':'','assists':[],'num_players':0}
 	for player in players:
+		
 		#this player is the scorer
 		if (i%3 == 0):
 			dictEntry['scorer'] = player
+			dictEntry['team'] = team[teamIndex]
+			teamIndex+=1
 		#this player had an assist
 		elif (i%3 == 1):
 			dictEntry['assists'].append(player)
@@ -58,7 +62,7 @@ def populateGoals(players):
 			dictEntry['assists'].append(player)
 			goals.append(dictEntry)
 			dictEntry = {'team':'', 'scorer':'','assists':[],'num_players':0}
-		i +=1	
+		i +=1
 	return goals
 
 ###	appends domain to link
@@ -75,31 +79,38 @@ def cleanItems(item):
 ###	extracts scorer, assisters, and number of players involved in the goal
 def getNhlGameData(soup):
 	i = 0
+	teamIndex = 0
 	involvedPlayers = []
+	team = []
+	tdList = soup.find_all(align=re.compile('[left, center]'))
 	##get players involved
-	for td in soup.find_all(align='left'):
-		#deal with weird chars in Shootout Goal
-		tdString = td.contents[0].encode('utf-8')
-		if('unassisted' in tdString):
-			i +=1
-			involvedPlayers.append('')
-		elif('Penalty Shot' in tdString):
-			i+=1
-			involvedPlayers.append('')
-			involvedPlayers.append('')
-		elif((tdString == '\n') and (i==1 or i==2) and (len(td.contents) == 1)):
-			i=0
-			involvedPlayers.append('')
-		elif( (tdString == '\xa0') and (i == 1)):
-			print 'SO goal'
-		for contents in td.contents:
-			if (re.match(PLAYER_PATTERN, tdString) is not None):
-				involvedPlayers.append(contents.strip('1234567890() '))
-				i+=1
-				if(i==3):
-					i =0
-	print involvedPlayers
-	return populateGoals(involvedPlayers)	
+	for td in tdList:
+		#print td.contents
+		if(len(td.contents) > 0): 
+			#deal with weird chars in Shootout Goal
+			tdString = td.contents[0].encode('utf-8')
+			if('unassisted' in tdString):
+				i +=1
+				involvedPlayers.append('')
+			elif('Penalty Shot' in tdString):
+				involvedPlayers.append('')
+				involvedPlayers.append('')
+				i=0
+			elif((tdString == '\n') and (i==1 or i==2) and (len(td.contents) == 1)):
+				i=0
+				involvedPlayers.append('')
+			elif( (tdString == '\xa0') and (i == 1)):
+				print 'SO goal'
+			for contents in td.contents:
+				if (re.match(PLAYER_PATTERN, tdString) is not None):
+					involvedPlayers.append(contents.strip('1234567890() '))
+					if(i==0):
+						team.append(tdList[teamIndex].contents[0])
+					i+=1
+					if(i==3):
+						i =0
+			teamIndex+=1
+	return populateGoals(team,involvedPlayers)	
 
 ###	returns list of game data given as tsn boxscore html page
 ###	extracts scorer, assisters, and number of players involved in the goal
@@ -120,7 +131,7 @@ def getTsnGameData(soup):
 		for player in a_tag:
 			#If 3, two players assisted, if 2, one player assisted, if 1, no one assisted
 			numInvolvedPlayers =  len(a_tag)
-			playerString = str(player.contents[0])
+			playerString = player.contents[0].encode('utf-8')
 			#if player string contains this, the player scored a goal
 			if (playerString.find("(") > 0):
 				dictEntry['team'] = tdList[tdIndex-1].contents[0]
@@ -128,7 +139,7 @@ def getTsnGameData(soup):
 				dictEntry['num_players'] = numInvolvedPlayers
 				#the following remaining items are assisters
 				for assister in a_tag[1:]:
-						playerString = str(assister.contents[0])
+						playerString = assister.contents[0].encode('utf-8')
 						dictEntry['assists'].append(playerString)
 				#append to goals list
 				goals.append(dictEntry)
@@ -205,49 +216,50 @@ def main():
 	for item in items:
 		#set date
 		date = item['date']
-		
-		#form URLs if they are scraped from tsn (not from nhl)
-		if ("http://www.nhl.com/scores/htmlreports" not in item['link'][0]):
-			urls = cleanItems(item)
-		else:
-			tsn = False
-			urls = item['link']
-		
-		numGames = len(urls)
-		
-		#TEST PRINT URLS
-		#print urls
-	
-		#holds all game data returned by getGameData
-		data = []
-	
-		#visit each url
-		for url in urls:
-		
-			#use beautifulsoup to read html
-			html = urllib.urlopen(url).read()
-			soup = BeautifulSoup(html)	
-			if(tsn):
-				gameData = getTsnGameData(soup)
+
+		if( len(item['link']) > 0):		
+			#form URLs if they are scraped from tsn (not from nhl)
+			if ("http://www.nhl.com/scores/htmlreports" not in item['link'][0]):
+				urls = cleanItems(item)
 			else:
-				gameData = getNhlGameData(soup)
-			data.append(gameData)
+				tsn = False
+				urls = item['link']
 		
-		for game in data:
-			#TEST PRINT GAME DATA
-			#printGameData(game, date[0])
-			#append all goal data to all game data
-			for goal in game:
-				allGameData.append(goal)
+			numGames = len(urls)
+			
+			#TEST PRINT URLS
+			#print urls
 		
-		#print per day stats
-		printReport(data)
-	
-	#TEST PRINT ALL THE GAME DATA
-#	for i in allGameData:
-#		print i
-#	print len(allGameData)
-	writeGameData(allGameData)
+			#holds all game data returned by getGameData
+			data = []
+		
+			#visit each url
+			for url in urls:
+			
+				#use beautifulsoup to read html
+				html = urllib.urlopen(url).read()
+				soup = BeautifulSoup(html)	
+				if(tsn):
+					gameData = getTsnGameData(soup)
+				else:
+					gameData = getNhlGameData(soup)
+				data.append(gameData)
+			
+			for game in data:
+				#TEST PRINT GAME DATA
+				#printGameData(game, date[0])
+				#append all goal data to all game data
+				for goal in game:
+					allGameData.append(goal)
+			
+			#print per day stats
+			printReport(data)
+		
+		#TEST PRINT ALL THE GAME DATA
+	#	for i in allGameData:
+	#		print i
+	#	print len(allGameData)
+		writeGameData(allGameData)
 	
 if __name__ == "__main__":
     main()
