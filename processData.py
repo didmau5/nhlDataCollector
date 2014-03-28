@@ -20,9 +20,10 @@ import os
 from scrapy import cmdline
 import argparse
 import csv
+import html5lib
 
 MAX_NUM_ASSISTERS = 2
-PLAYER_PATTERN = '(\d)(\d)? (\w).[\'(\w)-]+\((\d)(\d)?\)'
+PLAYER_PATTERN = '(\d)(\d)? (\w).[\' .(\w)-]+\((\d)(\d)?\)'
 
 ###	print program header
 def printHeader():
@@ -85,31 +86,51 @@ def getNhlGameData(soup):
 	tdList = soup.find_all(align=re.compile('[left, center]'))
 	##get players involved
 	for td in tdList:
-		#print td.contents
 		if(len(td.contents) > 0): 
+			#print td.contents
 			#deal with weird chars in Shootout Goal
 			tdString = td.contents[0].encode('utf-8')
-			if('unassisted' in tdString):
+			if(tdString == 'unassisted'):
 				i +=1
 				involvedPlayers.append('')
-			elif('Penalty Shot' in tdString):
+			elif(tdString == 'Penalty Shot'):
 				involvedPlayers.append('')
 				involvedPlayers.append('')
 				i=0
-			elif((tdString == '\n') and (i==1 or i==2) and (len(td.contents) == 1)):
-				i=0
+			elif((tdString == '\n') and (i==1 or i==2)):
 				involvedPlayers.append('')
+				if(i==2):
+					i=0
+				else:	
+					i+=1
 			elif( (tdString == '\xa0') and (i == 1)):
-				print 'SO goal'
+				involvedPlayers.append('')
+				involvedPlayers.append('')
+				i =0
+			elif((tdString == 'Unsuccessful Penalty Shot') and (i>0)):
+				involvedPlayers = involvedPlayers[:len(involvedPlayers)-1]
+				team = team[:len(team)-1]
+				i=0
 			for contents in td.contents:
+				
 				if (re.match(PLAYER_PATTERN, tdString) is not None):
+					#print contents
 					involvedPlayers.append(contents.strip('1234567890() '))
 					if(i==0):
-						team.append(tdList[teamIndex].contents[0])
-					i+=1
-					if(i==3):
+						team.append(tdList[teamIndex-1].contents[0])
+						i+=1
+					elif(i==2):
 						i =0
-			teamIndex+=1
+					else:
+						i+=1
+		##2010-11 season switch from '\n' to '' for no second assist
+		elif((len(td.contents) == 0) and (i==2)):
+			involvedPlayers.append('')
+			i=0
+					
+		teamIndex+=1
+	#print team
+	#print involvedPlayers
 	return populateGoals(team,involvedPlayers)	
 
 ###	returns list of game data given as tsn boxscore html page
@@ -238,7 +259,8 @@ def main():
 			
 				#use beautifulsoup to read html
 				html = urllib.urlopen(url).read()
-				soup = BeautifulSoup(html)	
+				#use html.parser parameter for soup bug (2008-09)
+				soup = BeautifulSoup(html, "xml")
 				if(tsn):
 					gameData = getTsnGameData(soup)
 				else:
@@ -247,7 +269,7 @@ def main():
 			
 			for game in data:
 				#TEST PRINT GAME DATA
-				#printGameData(game, date[0])
+				printGameData(game, date[0])
 				#append all goal data to all game data
 				for goal in game:
 					allGameData.append(goal)
@@ -256,9 +278,9 @@ def main():
 			printReport(data)
 		
 		#TEST PRINT ALL THE GAME DATA
-	#	for i in allGameData:
-	#		print i
-	#	print len(allGameData)
+		#for i in allGameData:
+		#	print i
+		#print len(allGameData)
 		writeGameData(allGameData)
 	
 if __name__ == "__main__":

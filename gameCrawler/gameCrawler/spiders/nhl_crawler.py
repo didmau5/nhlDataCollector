@@ -14,6 +14,7 @@ class NhlSpider(Spider):
         super(NhlSpider, self).__init__(*args, **kwargs)
         season = seasonStart+seasonEnd
         print season
+        ## TO DO: MULTIPLE SEASONS
     	self.start_urls = ['http://www.nhl.com/ice/gamestats.htm?season=%s' % season]
 
 
