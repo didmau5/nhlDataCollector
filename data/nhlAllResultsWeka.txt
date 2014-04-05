@@ -1,0 +1,37 @@
+=== Run information ===
+
+Scheme:       weka.associations.Apriori -N 10 -T 0 -C 0.1 -D 0.05 -U 1.0 -M 0.0010 -S -1.0 -c -1
+Relation:     allGoalData_new-weka.filters.unsupervised.attribute.Remove-R1
+Instances:    43552
+Attributes:   3
+              scorer
+              assist1
+              assist2
+=== Associator model (full training set) ===
+
+
+Apriori
+=======
+
+Minimum support: 0 (44 instances)
+Minimum metric <confidence>: 0.1
+Number of cycles performed: 20
+
+Generated sets of large itemsets:
+
+Size of set of large itemsets L(1): 952
+
+Size of set of large itemsets L(2): 12
+
+Best rules found:
+
+ 1. scorer=D.SEDIN 186 ==> assist1=H.SEDIN 106    conf:(0.57)
+ 2. assist2=H.SEDIN 176 ==> assist1=D.SEDIN 93    conf:(0.53)
+ 3. assist2=D.SEDIN 125 ==> assist1=H.SEDIN 64    conf:(0.51)
+ 4. assist1=D.SEDIN 183 ==> assist2=H.SEDIN 93    conf:(0.51)
+ 5. scorer=H.SEDIN 120 ==> assist1=D.SEDIN 55    conf:(0.46)
+ 6. assist1=H.SEDIN 240 ==> scorer=D.SEDIN 106    conf:(0.44)
+ 7. assist1=M.ST LOUIS 123 ==> scorer=S.STAMKOS 49    conf:(0.4)
+ 8. assist1=N.BACKSTROM 198 ==> scorer=A.OVECHKIN 77    conf:(0.39)
+ 9. assist2=N.BACKSTROM 168 ==> scorer=A.OVECHKIN 62    conf:(0.37)
+10. assist2=R.GETZLAF 150 ==> scorer=C.PERRY 53    conf:(0.35)

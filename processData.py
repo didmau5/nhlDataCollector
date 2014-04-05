@@ -260,16 +260,19 @@ def main():
 				#use beautifulsoup to read html
 				html = urllib.urlopen(url).read()
 				#use html.parser parameter for soup bug (2008-09)
-				soup = BeautifulSoup(html, "xml")
+				
 				if(tsn):
+					soup = BeautifulSoup(html)
 					gameData = getTsnGameData(soup)
 				else:
+					soup = BeautifulSoup(html, "xml")
 					gameData = getNhlGameData(soup)
+					
 				data.append(gameData)
 			
 			for game in data:
 				#TEST PRINT GAME DATA
-				printGameData(game, date[0])
+				#printGameData(game, date[0])
 				#append all goal data to all game data
 				for goal in game:
 					allGameData.append(goal)
